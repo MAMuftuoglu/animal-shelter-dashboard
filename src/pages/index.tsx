@@ -1,12 +1,14 @@
 import { GetServerSideProps } from 'next';
 import { prisma } from '@/lib/prisma';
 import { Animal } from '@prisma/client';
+import { AnimalCard } from '@/components/AnimalCard';
 
 interface HomeProps {
   animals: Animal[];
 }
 
 export default function Home({ animals }: HomeProps) {
+  console.log('Animals received:', animals);
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
