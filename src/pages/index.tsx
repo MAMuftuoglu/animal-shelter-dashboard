@@ -1,28 +1,77 @@
 import { GetServerSideProps } from 'next';
 import { prisma } from '@/lib/prisma';
-import { Animal } from '@prisma/client';
+import { Animal, AnimalStatus } from '@prisma/client';
 import { AnimalCard } from '@/components/AnimalCard';
 
 interface HomeProps {
   animals: Animal[];
 }
 
-export default function Home({ animals }: HomeProps) {
-  console.log('Animals received:', animals);
-  return (
-    <main className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Animal Shelter Dashboard
-        </h1>
+const statusConfig = {
+  READY_TO_ADOPT: {
+    className: 'status-ready-to-adopt',
+    label: 'Ready to Adopt',
+  },
+  ADOPTED: {
+    className: 'status-adopted',
+    label: 'Adopted',
+  },
+  NEWLY_FOUND: {
+    className: 'status-newly-found',
+    label: 'Newly Found',
+  },
+  UNAVAILABLE: {
+    className: 'status-unavailable',
+    label: 'Unavailable',
+  },
+} as const;
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {animals.map((animal) => (
-            <AnimalCard key={animal.id} animal={animal} />
-          ))}
-        </div>
-      </div>
-    </main>
+export default function Home({ animals }: HomeProps) {
+  const animalsByStatus = animals.reduce((acc, animal) => {
+    const status = animal.status || AnimalStatus.UNAVAILABLE;
+    if (!acc[status]) {
+      acc[status] = [];
+    }
+    acc[status].push(animal);
+    return acc;
+  }, {} as Record<string, Animal[]>);
+
+  return (
+    <div className="space-y-6 p-6">
+      {Object.entries(animalsByStatus)
+        .sort(([a], [b]) => {
+          const order = [
+            'ADOPTED',
+            'READY_TO_ADOPT',
+            'NEWLY_FOUND',
+            'UNAVAILABLE',
+          ];
+          return order.indexOf(a) - order.indexOf(b);
+        })
+        .map(([status, statusAnimals]) => (
+          <details
+            key={status}
+            className={`status-section ${
+              statusConfig[status as keyof typeof statusConfig]?.className ||
+              'bg-gray-100 border-gray-500'
+            }`}
+            open={false}
+          >
+            <summary className="status-summary">
+              {statusConfig[status as keyof typeof statusConfig]?.label ||
+                status}{' '}
+              ({statusAnimals.length})
+            </summary>
+            <div className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {statusAnimals.map((animal) => (
+                  <AnimalCard key={animal.id} animal={animal} />
+                ))}
+              </div>
+            </div>
+          </details>
+        ))}
+    </div>
   );
 }
 

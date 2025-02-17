@@ -3,7 +3,6 @@ import { PrismaClient, AnimalType, AnimalStatus } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Clear existing data
   await prisma.animal.deleteMany();
 
   const animals = [
@@ -44,6 +43,13 @@ async function main() {
       type: AnimalType.CAT,
       status: AnimalStatus.NEWLY_FOUND,
       imageUrl: `https://placekitten.com/300/300?image=2`,
+      age: Math.floor(Math.random() * 10) + 1,
+    },
+    {
+      name: 'Milo',
+      type: AnimalType.DOG,
+      status: AnimalStatus.ADOPTED,
+      imageUrl: `https://robohash.org/Milo?set=set4`,
       age: Math.floor(Math.random() * 10) + 1,
     },
   ];
