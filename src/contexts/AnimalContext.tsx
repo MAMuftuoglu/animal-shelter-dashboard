@@ -44,7 +44,7 @@ export function AnimalProvider({
       if (!response.ok) throw new Error('Failed to update status');
 
       setError(null);
-    } catch (_) {
+    } catch (_error) {
       setAnimals(previousAnimals);
       setError('Failed to update animal status. Please try again.');
 

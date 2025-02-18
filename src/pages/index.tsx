@@ -30,7 +30,6 @@ const statusConfig = {
 export default function Home({ initialAnimals }: HomeProps) {
   const { animals, setAnimals, updateAnimalStatus, error } = useAnimal();
 
-  // If context is empty but we have initialAnimals, update the context
   if (animals.length === 0 && initialAnimals.length > 0) {
     setAnimals(initialAnimals);
   }
