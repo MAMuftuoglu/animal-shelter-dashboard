@@ -1,10 +1,11 @@
 import { GetServerSideProps } from 'next';
 import { prisma } from '@/lib/prisma';
 import { Animal, AnimalStatus } from '@prisma/client';
-import { AnimalCard } from '@/components/AnimalCard';
+import { useAnimal } from '@/contexts/AnimalContext';
+import { CategorySection } from '@/components/CategorySection';
 
 interface HomeProps {
-  animals: Animal[];
+  initialAnimals: Animal[];
 }
 
 const statusConfig = {
@@ -26,7 +27,9 @@ const statusConfig = {
   },
 } as const;
 
-export default function Home({ animals }: HomeProps) {
+export default function Home({ initialAnimals }: HomeProps) {
+  const { animals, updateAnimalStatus, error } = useAnimal();
+
   const animalsByStatus = animals.reduce((acc, animal) => {
     const status = animal.status || AnimalStatus.UNAVAILABLE;
     if (!acc[status]) {
@@ -36,55 +39,58 @@ export default function Home({ animals }: HomeProps) {
     return acc;
   }, {} as Record<string, Animal[]>);
 
+  const handleDragStart = (e: React.DragEvent, animal: Animal) => {
+    e.dataTransfer.setData('animalId', animal.id.toString());
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: string) => {
+    e.preventDefault();
+    const animalId = e.dataTransfer.getData('animalId');
+    await updateAnimalStatus(animalId, newStatus as AnimalStatus);
+  };
+
   return (
-    <div className="space-y-6 p-6">
-      {Object.entries(animalsByStatus)
-        .sort(([a], [b]) => {
-          const order = [
-            'ADOPTED',
-            'READY_TO_ADOPT',
-            'NEWLY_FOUND',
-            'UNAVAILABLE',
-          ];
-          return order.indexOf(a) - order.indexOf(b);
-        })
-        .map(([status, statusAnimals]) => (
-          <details
-            key={status}
-            className={`status-section ${
-              statusConfig[status as keyof typeof statusConfig]?.className ||
-              'bg-gray-100 border-gray-500'
-            }`}
-            open={false}
-          >
-            <summary className="status-summary">
-              {statusConfig[status as keyof typeof statusConfig]?.label ||
-                status}{' '}
-              ({statusAnimals.length})
-            </summary>
-            <div className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {statusAnimals.map((animal) => (
-                  <AnimalCard key={animal.id} animal={animal} />
-                ))}
-              </div>
-            </div>
-          </details>
-        ))}
-    </div>
+    <main className="container mx-auto p-4">
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {Object.entries(AnimalStatus)
+          .sort(([a], [b]) => {
+            const order = [
+              'ADOPTED',
+              'READY_TO_ADOPT',
+              'NEWLY_FOUND',
+              'UNAVAILABLE',
+            ];
+            return order.indexOf(a) - order.indexOf(b);
+          })
+          .map(([status]) => (
+            <CategorySection
+              key={status}
+              category={{
+                id: status,
+                name:
+                  statusConfig[status as keyof typeof statusConfig]?.label ||
+                  status,
+              }}
+              animals={animalsByStatus[status] || []}
+              onDragStart={handleDragStart}
+              onDrop={handleDrop}
+            />
+          ))}
+      </div>
+    </main>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const animals = await prisma.animal.findMany({
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
+  const animals = await prisma.animal.findMany();
   return {
     props: {
-      animals: JSON.parse(JSON.stringify(animals)),
+      initialAnimals: JSON.parse(JSON.stringify(animals)),
     },
   };
 };
