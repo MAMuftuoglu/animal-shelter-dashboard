@@ -3,6 +3,7 @@ import { Animal, AnimalStatus } from '@prisma/client';
 
 interface AnimalContextType {
   animals: Animal[];
+  setAnimals: (animals: Animal[]) => void;
   updateAnimalStatus: (
     animalId: string,
     newStatus: AnimalStatus
@@ -43,7 +44,7 @@ export function AnimalProvider({
       if (!response.ok) throw new Error('Failed to update status');
 
       setError(null);
-    } catch (err) {
+    } catch (_) {
       setAnimals(previousAnimals);
       setError('Failed to update animal status. Please try again.');
 
@@ -52,7 +53,9 @@ export function AnimalProvider({
   };
 
   return (
-    <AnimalContext.Provider value={{ animals, updateAnimalStatus, error }}>
+    <AnimalContext.Provider
+      value={{ animals, setAnimals, updateAnimalStatus, error }}
+    >
       {children}
     </AnimalContext.Provider>
   );

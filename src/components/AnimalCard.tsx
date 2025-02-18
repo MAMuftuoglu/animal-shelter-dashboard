@@ -12,19 +12,6 @@ export const AnimalCard: React.FC<AnimalCardProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
 
-  const getAnimalStatusName = (status: AnimalStatus) => {
-    switch (status) {
-      case AnimalStatus.NEWLY_FOUND:
-        return 'Newly Found';
-      case AnimalStatus.READY_TO_ADOPT:
-        return 'Ready to Adopt';
-      case AnimalStatus.ADOPTED:
-        return 'Adopted';
-      case AnimalStatus.UNAVAILABLE:
-        return 'Unavailable';
-    }
-  };
-
   const getAnimalTypeName = (type: AnimalType) => {
     switch (type) {
       case AnimalType.DOG:

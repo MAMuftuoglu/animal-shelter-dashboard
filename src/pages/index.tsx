@@ -28,9 +28,16 @@ const statusConfig = {
 } as const;
 
 export default function Home({ initialAnimals }: HomeProps) {
-  const { animals, updateAnimalStatus, error } = useAnimal();
+  const { animals, setAnimals, updateAnimalStatus, error } = useAnimal();
 
-  const animalsByStatus = animals.reduce((acc, animal) => {
+  // If context is empty but we have initialAnimals, update the context
+  if (animals.length === 0 && initialAnimals.length > 0) {
+    setAnimals(initialAnimals);
+  }
+
+  const currentAnimals = animals.length > 0 ? animals : initialAnimals;
+
+  const animalsByStatus = currentAnimals.reduce((acc, animal) => {
     const status = animal.status || AnimalStatus.UNAVAILABLE;
     if (!acc[status]) {
       acc[status] = [];

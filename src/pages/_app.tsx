@@ -2,9 +2,10 @@ import type { AppProps } from 'next/app';
 import { Layout } from '@/components/Layout';
 import { AnimalProvider } from '@/contexts/AnimalContext';
 import '@/styles/globals.css';
+import { Animal } from '@prisma/client';
 
 interface CustomPageProps {
-  initialAnimals?: any[];
+  initialAnimals?: Animal[];
 }
 
 export default function App({
